@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-white mb-8">Platform Administration</h1>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-{% if request.user.is_superuser %}3{% else %}1{% endif %} gap-6 mb-8">
+        {% if request.user.is_superuser %}
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-gray-400 text-sm font-medium">Total Spaces</h3>
+            <p class="text-3xl font-bold text-white mt-2">{{ spaces.count }}</p>
+        </div>
+        {% endif %}
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-gray-400 text-sm font-medium">Total Users</h3>
+            <p class="text-3xl font-bold text-white mt-2">{{ users.count }}</p>
+        </div>
+    </div>
+
+    <!-- Spaces List (Only for Superusers) -->
+    {% if request.user.is_superuser %}
+    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-white">Knowledge Spaces</h2>
+            <a href="{% url 'create_space' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">Create New Space</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-gray-300">
+                <thead class="bg-gray-700 text-gray-400 uppercase text-xs">
+                    <tr>
+                        <th class="px-6 py-3">Name</th>
+                        <th class="px-6 py-3">Owner</th>
+                        <th class="px-6 py-3">Public</th>
+                        <th class="px-6 py-3">Created</th>
+                        <th class="px-6 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    {% for space in spaces %}
+                    <tr class="hover:bg-gray-750">
+                        <td class="px-6 py-4 font-medium text-white">{{ space.name }}</td>
+                        <td class="px-6 py-4">{{ space.owner.username }}</td>
+                        <td class="px-6 py-4">
+                            {% if space.is_public %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Public</span>
+                            {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Private</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm">{{ space.created_at|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <a href="{% url 'space_view' space.id %}" class="text-gray-400 hover:text-white mr-3">View</a>
+                            <a href="{% url 'edit_space' space.id %}" class="text-blue-400 hover:text-blue-300 mr-3">Edit</a>
+                            <a href="{% url 'manage_users' space.id %}" class="text-green-400 hover:text-green-300">Users</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Users List -->
+    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-white">All Users</h2>
+            <a href="{% url 'create_user' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">Create User</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-gray-300">
+                <thead class="bg-gray-700 text-gray-400 uppercase text-xs">
+                    <tr>
+                        <th class="px-6 py-3">Username</th>
+                        <th class="px-6 py-3">Email</th>
+                        <th class="px-6 py-3">Role</th>
+                        <th class="px-6 py-3">Joined</th>
+                        <th class="px-6 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    {% for user in users %}
+                    <tr class="hover:bg-gray-750">
+                        <td class="px-6 py-4 font-medium text-white">{{ user.username }}</td>
+                        <td class="px-6 py-4">{{ user.email }}</td>
+                        <td class="px-6 py-4">
+                            {% if user.is_superuser %}
+                            <span class="text-purple-400 font-bold">Admin</span>
+                            {% elif user.is_staff %}
+                            <span class="text-blue-400 font-bold">Creator</span>
+                            {% else %}
+                            <span class="text-gray-400">User</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm">{{ user.date_joined|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            {% if user.is_superuser and not request.user.is_superuser %}
+                            <span class="text-gray-600">No Access</span>
+                            {% else %}
+                            <a href="{% url 'edit_user' user.id %}" class="text-blue-400 hover:text-blue-300">Edit</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

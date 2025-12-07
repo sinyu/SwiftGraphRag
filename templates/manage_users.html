@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-white">Manage Users: {{ space.name }}</h1>
+        <a href="{% url 'space_view' space.id %}" class="text-gray-400 hover:text-white flex items-center">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Space
+        </a>
+    </div>
+
+    <!-- Add User Form -->
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-semibold text-white mb-4">Add Member</h2>
+        <form method="POST" class="flex gap-4" id="add-user-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="username" id="selected-username">
+            <div class="flex-grow relative">
+                <input type="text" id="user-search" placeholder="Search and select a user..." autocomplete="off"
+                       class="w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <div id="user-dropdown" class="hidden absolute z-10 w-full mt-1 bg-gray-700 border border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {% for u in all_users %}
+                    <div class="user-option px-3 py-2 hover:bg-gray-600 cursor-pointer text-white" data-username="{{ u.username }}">
+                        {{ u.username }}
+                    </div>
+                    {% empty %}
+                    <div class="px-3 py-2 text-gray-400 text-sm">No available users to add</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <select name="role" class="bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <option value="member">Member</option>
+                <option value="owner">Owner</option>
+            </select>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Add
+            </button>
+        </form>
+    </div>
+
+    <!-- Users List -->
+    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+            <h2 class="text-xl font-semibold text-white">Current Members</h2>
+        </div>
+        <table class="w-full text-left text-gray-300">
+            <thead class="bg-gray-700 text-gray-400 uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-3">User</th>
+                    <th class="px-6 py-3">Role</th>
+                    <th class="px-6 py-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+                {% for perm in permissions %}
+                <tr class="hover:bg-gray-750">
+                    <td class="px-6 py-4 font-medium text-white">
+                        {{ perm.user.username }}
+                        {% if perm.user == space.owner %}
+                            <span class="ml-2 text-xs bg-purple-900 text-purple-200 px-2 py-0.5 rounded">Primary Owner</span>
+                        {% endif %}
+                        {% if perm.user == request.user %}
+                            <span class="ml-2 text-xs bg-green-900 text-green-200 px-2 py-0.5 rounded">You</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <form method="POST" class="inline-flex items-center">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_role">
+                            <input type="hidden" name="username" value="{{ perm.user.username }}">
+                            <select name="role" onchange="this.form.submit()" 
+                                    class="bg-gray-900 border-none text-sm rounded px-2 py-1 focus:ring-0 cursor-pointer"
+                                    {% if perm.user == space.owner %}disabled title="Cannot change role of primary owner"{% endif %}>
+                                <option value="member" {% if perm.role == 'member' %}selected{% endif %}>Member</option>
+                                <option value="owner" {% if perm.role == 'owner' %}selected{% endif %}>Owner</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        <form method="POST" onsubmit="return confirm('Are you sure? {% if perm.user == space.owner %}Ownership will be transferred to another owner.{% endif %}');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="username" value="{{ perm.user.username }}">
+                            <button type="submit" class="text-red-400 hover:text-red-300">
+                                {% if perm.user == request.user %}Leave{% else %}Remove{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('user-search');
+    const dropdown = document.getElementById('user-dropdown');
+    const selectedUsernameInput = document.getElementById('selected-username');
+    const userOptions = document.querySelectorAll('.user-option');
+    const form = document.getElementById('add-user-form');
+
+    // Show dropdown on focus
+    searchInput.addEventListener('focus', function() {
+        dropdown.classList.remove('hidden');
+    });
+
+    // Filter users as typing
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        let hasVisibleOptions = false;
+
+        userOptions.forEach(option => {
+            const username = option.dataset.username.toLowerCase();
+            if (username.includes(filter)) {
+                option.classList.remove('hidden');
+                hasVisibleOptions = true;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+
+        dropdown.classList.toggle('hidden', !hasVisibleOptions);
+    });
+
+    // Select user on click
+    userOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const username = this.dataset.username;
+            searchInput.value = username;
+            selectedUsernameInput.value = username;
+            dropdown.classList.add('hidden');
+        });
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    // Validate form submission
+    form.addEventListener('submit', function(e) {
+        if (!selectedUsernameInput.value) {
+            e.preventDefault();
+            alert('Please select a user from the dropdown');
+        }
+    });
+</script>
+{% endblock %}

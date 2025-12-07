@@ -1,0 +1,19 @@
+django>=5.0
+# django-auth-ldap  # Optional - requires OpenLDAP libraries (Linux only)
+duckdb==1.1.3
+langchain
+langgraph
+llama-cpp-python  # Optional - for local LLM inference
+langchain-openai
+huggingface_hub
+langchain-community
+langchain-huggingface
+langchain-text-splitters
+pypdf
+python-dotenv
+whitenoise
+sentence-transformers
+# For serving on Windows/Linux if needed, though runserver is fine for dev/demo
+waitress
+uvicorn
+beautifulsoup4

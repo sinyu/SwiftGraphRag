@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-white">My Dashboard</h1>
+    {% if user.is_staff or user.is_superuser %}
+    <a href="{% url 'create_space' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+        + Create New Space
+    </a>
+    {% endif %}
+</div>
+
+<div class="space-y-12">
+    <!-- Owned Spaces -->
+    <section>
+        <h2 class="text-xl font-semibold text-gray-300 mb-4 border-b border-gray-700 pb-2">My Spaces</h2>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {% for space in owned_spaces %}
+            <div class="bg-gray-800 overflow-hidden shadow rounded-lg border border-gray-700 hover:border-blue-500 transition">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-white">
+                        <a href="{% url 'space_view' space.id %}" class="hover:underline">{{ space.name }}</a>
+                    </h3>
+                    <p class="mt-2 max-w-2xl text-sm text-gray-400">
+                        {{ space.description|truncatechars:100 }}
+                    </p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if space.is_public %}bg-green-900 text-green-200{% else %}bg-yellow-900 text-yellow-200{% endif %}">
+                            {% if space.is_public %}Public{% else %}Private{% endif %}
+                        </span>
+                        <a href="{% url 'edit_space' space.id %}" class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                            Manage &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500">You haven't created any spaces yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Permitted Spaces -->
+    <section>
+        <h2 class="text-xl font-semibold text-gray-300 mb-4 border-b border-gray-700 pb-2">Shared with Me</h2>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {% for space in permitted_spaces %}
+            <div class="bg-gray-800 overflow-hidden shadow rounded-lg border border-gray-700 hover:border-purple-500 transition">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-white">
+                        <a href="{% url 'space_view' space.id %}" class="hover:underline">{{ space.name }}</a>
+                    </h3>
+                    <p class="mt-2 max-w-2xl text-sm text-gray-400">
+                        {{ space.description|truncatechars:100 }}
+                    </p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-900 text-purple-200">
+                            Shared
+                        </span>
+                        <a href="{% url 'space_view' space.id %}" class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                            View &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500">No private spaces have been shared with you.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

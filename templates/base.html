@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GraphRAG Marketplace{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; 
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50 backdrop-blur-md bg-opacity-80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'marketplace' %}" class="text-xl font-bold text-blue-400 hover:text-blue-300 transition">
+                        {{ MARKETPLACE_TITLE }}
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'marketplace' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Marketplace</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                        {% if user.is_superuser or user.is_staff %}
+                        <a href="{% url 'admin_dashboard' %}" class="text-purple-400 hover:text-purple-300 px-3 py-2 rounded-md text-sm font-medium">Admin</a>
+                        {% endif %}
+                        <div class="border-l border-gray-600 h-6 mx-2"></div>
+                        <span class="text-gray-300 px-3 py-2 text-sm">{{ user.username }}</span>
+                        <a href="{% url 'password_change' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Change Password</a>
+                        <form method="POST" action="{% url 'logout' %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-400 hover:text-red-300 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% if messages %}
+            <div id="messages-container" class="mb-6 space-y-2">
+                {% for message in messages %}
+                    <div class="message-alert p-4 rounded-md flex items-center justify-between {% if message.tags == 'error' %}bg-red-900 text-red-200{% else %}bg-green-900 text-green-200{% endif %}" 
+                         data-level="{{ message.tags }}">
+                        <span>{{ message }}</span>
+                        {% if message.tags == 'error' %}
+                        <button onclick="this.parentElement.remove()" class="ml-4 text-red-200 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <script>
+                // Auto-dismiss success messages after 3 seconds
+                document.addEventListener('DOMContentLoaded', function() {
+                    const messages = document.querySelectorAll('.message-alert');
+                    messages.forEach(function(message) {
+                        const level = message.getAttribute('data-level');
+                        if (level !== 'error') {
+                            setTimeout(function() {
+                                message.style.transition = 'opacity 0.5s ease-out';
+                                message.style.opacity = '0';
+                                setTimeout(function() {
+                                    message.remove();
+                                }, 500);
+                            }, 3000);
+                        }
+                    });
+                });
+            </script>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-gray-400 text-sm">
+                &copy; 2025 GraphRAG Marketplace. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>

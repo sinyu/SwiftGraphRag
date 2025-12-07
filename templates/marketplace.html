@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="text-center mb-12">
+    <h1 class="text-4xl font-extrabold text-white sm:text-5xl sm:tracking-tight lg:text-6xl">
+        Explore Knowledge Spaces
+    </h1>
+    <p class="mt-5 max-w-xl mx-auto text-xl text-gray-400">
+        Discover public knowledge bases or log in to access your private spaces.
+    </p>
+    
+    <!-- Search Bar -->
+    <div class="mt-8 max-w-xl mx-auto">
+        <form action="{% url 'marketplace' %}" method="get" class="flex gap-2">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search spaces..." 
+                   class="flex-1 bg-gray-800 border border-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:border-blue-500">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition">
+                Search
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for space in spaces %}
+    <div class="bg-gray-800 overflow-hidden shadow rounded-lg border border-gray-700 hover:border-blue-500 transition duration-300">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-white">
+                <a href="{% url 'space_view' space.id %}" class="hover:underline">{{ space.name }}</a>
+            </h3>
+            <p class="mt-2 max-w-2xl text-sm text-gray-400">
+                {{ space.description|truncatechars:100 }}
+            </p>
+            <div class="mt-4 flex items-center justify-between">
+                {% if space.is_public %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-200">
+                    Public
+                </span>
+                {% elif space.owner == user %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900 text-blue-200">
+                    My Space
+                </span>
+                {% else %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-900 text-purple-200">
+                    Shared
+                </span>
+                {% endif %}
+                <a href="{% url 'space_view' space.id %}" class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                    View Space &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center text-gray-500 py-12">
+        No public spaces available yet.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

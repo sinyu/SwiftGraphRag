@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-8">Create New Knowledge Space</h1>
+    
+    <form action="{% url 'create_space' %}" method="POST" class="bg-gray-800 shadow rounded-lg border border-gray-700 p-6 space-y-6">
+        {% csrf_token %}
+        
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-300">Space Name</label>
+            <div class="mt-1">
+                <input type="text" name="name" id="name" required class="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+        </div>
+
+        <div>
+            <label for="description" class="block text-sm font-medium text-gray-300">Description</label>
+            <div class="mt-1">
+                <textarea name="description" id="description" rows="3" class="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+            </div>
+        </div>
+
+        <div class="flex items-start">
+            <div class="flex items-center h-5">
+                <input id="is_public" name="is_public" type="checkbox" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-600 rounded bg-gray-700">
+            </div>
+            <div class="ml-3 text-sm">
+                <label for="is_public" class="font-medium text-gray-300">Make Public</label>
+                <p class="text-gray-500">Public spaces are visible to everyone without login.</p>
+            </div>
+        </div>
+
+        <div class="pt-5 border-t border-gray-700 flex justify-end">
+            <a href="{% url 'dashboard' %}" class="bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 mr-3">Cancel</a>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Create Space</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
