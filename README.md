@@ -1,6 +1,6 @@
 # GraphRAG Marketplace
 
-A lightweight, production-ready GraphRAG application with role-based access control and enterprise security features.
+A lightweight, production-ready GraphRAG application with role-based access control and enterprise security features. It is ready to be served as simple FAQ system
 
 ## Features
 
